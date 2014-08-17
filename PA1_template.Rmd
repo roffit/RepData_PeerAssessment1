@@ -1,20 +1,105 @@
-# Reproducible Research: Peer Assessment 1
+Reproducible Research Peer Assesment 1
+=====================================
+first we will load the data, create correct date type and remove NAs
+
+```{r}
+library(ggplot2)
+library(plyr)
+adf <- read.csv('activity.csv')
+adf$date <- as.POSIXlt(adf[, 2])
+actdf <- adf[!is.na(adf[,1]),]
+```
+What is the mean total number of steps per day?
+===
+Here is a histogram of the steps taken per day
+```{r}
+actsummary <- ddply(actdf, .(date), summarize, Total_Steps = sum(steps))
+actsummary <- actsummary[order(actsummary$date),]
+
+p <- ggplot(actsummary, aes(date, Total_Steps)) + geom_histogram(stat = 'identity')
+p 
+```
+The mean number of steps per day is 
+```{r}
+mean(actsummary$Total_Steps)
+```
+And the median number of steps per day is
+```{r}
+median(actsummary$Total_Steps)
+```
+
+What is the average daily activity pattern?
+===
+Here is a plot of the average steps taken during each time interval
+
+```{r}
+q2summary <- ddply(actdf, .(interval), summarize, avestep = mean(steps))
+q2summary$interval <- as.integer(q2summary$interval)
+q2p <- ggplot(q2summary, aes(interval, avestep)) + geom_line()
+q2p
+```
+The interval that takes the most steps on average is
+```{r}
+
+maxfind <- order(q2summary$avestep, decreasing = TRUE)
+q2summary[maxfind[1],1]
+```
+
+Inputting Missing Values
+===
+The total number of records with missing values is
+```{R}
+sum(is.na(adf$steps))
+```
+
+We will now replace NAs with average steps for that interval
+```{r}
+for (i in which(sapply(adf, is.numeric))) {
+    adf[is.na(adf[, i]), i] <- mean(adf[, i],  na.rm = TRUE)
+}
+
+```
+
+Here is a histogram of the steps taken per day with NAs replaced
+```{r}
+asummary <- ddply(adf, .(date), summarize, Total_Steps = sum(steps))
+asummary <- asummary[order(asummary$date),]
+
+p2 <- ggplot(actsummary, aes(date, Total_Steps)) + geom_histogram(stat = 'identity')
+p2 
+```
+The mean number of steps per day is 
+```{r}
+mean(asummary$Total_Steps)
+```
+And the median number of steps per day is
+```{r}
+median(asummary$Total_Steps)
+```
+the mean number is not affected because of the method of imputing draws from
+mean steps per day.
+The median increases because a day with NAs went from below the median to above,
+this caused the median to be the same as the mean.
 
 
-## Loading and preprocessing the data
+Are there differences in activity patterns between weekdays and weekends?
+===
 
+```{r}
+adf$date <- as.POSIXct(adf[, 2])        
+adf <- ddply(adf, .(steps,date,interval), transform, weekday = weekdays(date))
+adf <- arrange(adf, weekday)
+weekends <-adf[10369:14976,]
+weekday <- adf[1:10368,]
+```
 
+here is the weekend plot followed by the weekday plot
+```{r}
+lastplot <- ddply(weekends, .(interval), summarize, avestep = mean(steps))
+lastplot2 <- ddply(weekday, .(interval), summarize, avestep =mean(steps))
 
-## What is mean total number of steps taken per day?
+plotty <- ggplot(lastplot, aes(interval,avestep)) + geom_line()
+plotty2 <- ggplot(lastplot2, aes(interval,avestep)) + geom_line()
 
-
-
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
+```
+as you can see people are much more active on the weekends.
