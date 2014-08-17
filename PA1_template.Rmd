@@ -101,5 +101,7 @@ lastplot2 <- ddply(weekday, .(interval), summarize, avestep =mean(steps))
 plotty <- ggplot(lastplot, aes(interval,avestep)) + geom_line()
 plotty2 <- ggplot(lastplot2, aes(interval,avestep)) + geom_line()
 
+plotty
+plotty2
 ```
 as you can see people are much more active on the weekends.
