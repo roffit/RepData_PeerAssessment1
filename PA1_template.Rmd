@@ -5,7 +5,7 @@ first we will load the data, create correct date type and remove NAs
 ```{r}
 library(ggplot2)
 library(plyr)
-adf <- read.csv('activity.csv')
+adf <- read.csv(unzip('activity.zip'))
 adf$date <- as.POSIXlt(adf[, 2])
 actdf <- adf[!is.na(adf[,1]),]
 ```
